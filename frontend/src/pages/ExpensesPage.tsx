@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { expensesApi } from '../services/api';
-import { Expense, ExpenseStatus, ExpenseCategory } from '../types';
+import { Expense } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 import { Button } from '../components/Button';
 import { Select } from '../components/Select';

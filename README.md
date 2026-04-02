@@ -14,9 +14,15 @@ A full-stack employee expense tracking application for ABC Corp with role-based 
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
 - **Auth**: JWT with role-based access control
 
+## Production URLs
+
+- **Frontend**: https://frontend-kappa-vert-23.vercel.app
+- **Backend**: https://expense-tracker-production-0757.up.railway.app
+- **API Docs**: https://expense-tracker-production-0757.up.railway.app/docs
+
 ## Quick Start
 
-### Backend
+### Backend (Local Development)
 
 ```bash
 cd backend
@@ -29,7 +35,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-### Frontend
+### Frontend (Local Development)
 
 ```bash
 cd frontend
@@ -47,7 +53,59 @@ npm run dev
 
 Once running, visit `http://localhost:8000/docs` for Swagger UI.
 
+## Project Structure
+
+```
+backend/
+├── app/
+│   ├── api/v1/routes/      # API endpoints
+│   ├── core/               # Config, DB, security
+│   ├── models/             # SQLAlchemy models
+│   ├── repositories/       # Data access layer
+│   ├── schemas/            # Pydantic schemas
+│   └── services/           # Business logic
+├── alembic/                # Database migrations
+├── Dockerfile              # Railway deployment
+├── railway.json            # Railway config
+└── requirements.txt        # Python dependencies
+
+frontend/
+├── src/
+│   ├── components/         # React components
+│   ├── pages/              # Page components
+│   ├── services/           # API calls
+│   └── store/              # State management
+├── package.json
+└── vite.config.ts
+```
+
 ## Deployment
 
-- Frontend: Vercel
-- Backend: Railway (with PostgreSQL)
+### Frontend (Vercel)
+
+1. Connect your GitHub repo to Vercel
+2. Add environment variable: `VITE_API_BASE_URL=https://expense-tracker-production-0757.up.railway.app/api/v1`
+3. Deploy automatically on push to main
+
+### Backend (Railway)
+
+1. Connect your GitHub repo to Railway
+2. Add PostgreSQL plugin
+3. Set `DATABASE_URL` environment variable (auto-set by Railway)
+4. Deploy automatically on push to main
+
+## Environment Variables
+
+### Backend (.env)
+
+```
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+SECRET_KEY=your-secret-key
+```
+
+### Frontend
+
+```
+VITE_API_BASE_URL=http://localhost:8000/api/v1  (local)
+VITE_API_BASE_URL=https://expense-tracker-production-0757.up.railway.app/api/v1  (production)
+```

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, Token } from '../types';
+import { User } from '../types';
 import { authApi } from '../services/api';
 
 interface AuthState {
@@ -26,10 +26,17 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data: userData } = await authApi.me();
       set({ user: userData, token: data.access_token, isLoading: false });
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { detail?: string } } };
+      const err = error as { response?: { data?: { detail?: string | Record<string, unknown> } } };
+      let errorMessage = 'Login failed';
+      const detail = err.response?.data?.detail;
+      if (typeof detail === 'string') {
+        errorMessage = detail;
+      } else if (detail && typeof detail === 'object' && 'msg' in detail) {
+        errorMessage = String(detail.msg);
+      }
       set({ 
         isLoading: false, 
-        error: err.response?.data?.detail || 'Login failed' 
+        error: errorMessage 
       });
       throw error;
     }

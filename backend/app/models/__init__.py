@@ -41,8 +41,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    expenses = relationship("Expense", back_populates="user")
-    reviewed_expenses = relationship("Expense", back_populates="reviewer")
+    expenses = relationship("Expense", back_populates="user", foreign_keys="Expense.user_id")
+    reviewed_expenses = relationship("Expense", back_populates="reviewer", foreign_keys="Expense.reviewed_by")
 
 
 class Department(Base):

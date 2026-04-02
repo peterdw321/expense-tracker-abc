@@ -20,6 +20,7 @@ wheels/
 *.egg
 MANIFEST
 .env
+.env.local
 .venv
 env/
 venv/
@@ -33,3 +34,5 @@ htmlcov/
 .DS_Store
 *.db
 *.sqlite3
+*.env.local
+*.env.*.local

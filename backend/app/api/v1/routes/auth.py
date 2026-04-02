@@ -5,7 +5,10 @@ from app.core.database import get_db
 from app.core.security import create_access_token, create_refresh_token, decode_token
 from app.services.user_service import UserService
 from app.schemas import UserCreate, UserResponse, Token, LoginRequest
-from app.models import UserRole
+from app.models import UserRole, User
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -23,20 +26,26 @@ async def get_current_user(
     )
     try:
         payload = decode_token(token)
-        user_id: str = payload.get("sub")
-        if user_id is None:
+        user_id_raw = payload.get("sub")
+        if user_id_raw is None:
             raise credentials_exception
-    except Exception:
+        user_id: str = str(user_id_raw)
+    except Exception as e:
+        logger.error(f"Token decode error: {e}")
         raise credentials_exception
     
     service = UserService(db)
-    user = await service.get_user_by_id(user_id)
-    if user is None:
+    try:
+        user = await service.get_user_by_id(user_id)
+        if user is None:
+            raise credentials_exception
+    except Exception as e:
+        logger.error(f"User lookup error: {e}")
         raise credentials_exception
     return user
 
 
-async def require_role(*roles: UserRole):
+def require_role(*roles: UserRole):
     async def role_checker(current_user: User = Depends(get_current_user)):
         if current_user.role not in roles:
             raise HTTPException(
@@ -79,6 +88,13 @@ async def register(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 async def get_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    role_val = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+    return {
+        "id": str(current_user.id),
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "role": role_val,
+        "department": current_user.department
+    }

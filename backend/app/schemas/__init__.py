@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_serializer, ConfigDict
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 from app.models import UserRole, ExpenseCategory, ExpenseStatus
 
 
@@ -22,11 +23,20 @@ class UserUpdate(BaseModel):
 
 
 class UserResponse(UserBase):
-    id: str
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    @field_serializer('id')
+    def serialize_id(self, value: UUID) -> str:
+        return str(value)
+
+    @field_serializer('role')
+    def serialize_role(self, value: UserRole) -> str:
+        if hasattr(value, 'value'):
+            return value.value
+        return str(value)
 
 
 class Token(BaseModel):
@@ -65,16 +75,35 @@ class ExpenseUpdate(BaseModel):
 
 
 class ExpenseResponse(ExpenseBase):
-    id: str
-    user_id: str
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    user_id: UUID
     status: ExpenseStatus
     submitted_at: datetime
-    reviewed_by: Optional[str] = None
+    reviewed_by: Optional[UUID] = None
     reviewed_at: Optional[datetime] = None
     rejection_reason: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    @field_serializer('id')
+    def serialize_id(self, value: UUID) -> str:
+        return str(value)
+
+    @field_serializer('user_id')
+    def serialize_user_id(self, value: UUID) -> str:
+        return str(value)
+
+    @field_serializer('reviewed_by')
+    def serialize_reviewed_by(self, value: Optional[UUID]) -> Optional[str]:
+        return str(value) if value else None
+
+    @field_serializer('category')
+    def serialize_category(self, value: ExpenseCategory) -> str:
+        return value.value
+
+    @field_serializer('status')
+    def serialize_status(self, value: ExpenseStatus) -> str:
+        return value.value
 
 
 class ApproveRequest(BaseModel):
@@ -91,10 +120,13 @@ class DepartmentBase(BaseModel):
 
 
 class DepartmentResponse(DepartmentBase):
-    id: str
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
+    id: UUID
+
+    @field_serializer('id')
+    def serialize_id(self, value: UUID) -> str:
+        return str(value)
 
 
 class ReportSummary(BaseModel):
@@ -109,6 +141,10 @@ class ReportByCategory(BaseModel):
     category: ExpenseCategory
     total: float
     count: int
+
+    @field_serializer('category')
+    def serialize_category(self, value: ExpenseCategory) -> str:
+        return value.value
 
 
 class ReportByDepartment(BaseModel):

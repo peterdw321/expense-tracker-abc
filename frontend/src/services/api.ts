@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://expense-tracker-production-0757.up.railway.app/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -28,9 +28,12 @@ api.interceptors.response.use(
 
 export const authApi = {
   login: (email: string, password: string) =>
-    api.post('/auth/login', null, {
-      params: { username: email, password },
-    }),
+    api.post('/auth/login', 
+      `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }
+    ),
   register: (data: { email: string; password: string; full_name: string; role: string; department?: string }) =>
     api.post('/auth/register', data),
   me: () => api.get('/auth/me'),
